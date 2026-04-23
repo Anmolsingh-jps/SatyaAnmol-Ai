@@ -1,49 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
-/* simple cache */
-const cache: any = new Map();
-
-function normalize(d: any) {
-  return {
-    search_data: d?.search_data || "",
-    verdict: d?.verdict || "BHRAMAK",
-    main_response: d?.main_response || "",
-    fix: d?.fix || "",
-    reel_script: d?.reel_script || "",
-    viralKit: {
-      caption: d?.viralKit?.caption || "",
-      hashtags: d?.viralKit?.hashtags || "",
-      reel_hook: d?.viralKit?.reel_hook || ""
-    }
-  };
-}
-
 export async function POST(req: NextRequest) {
   try {
     const body: any = await req.json();
-    const query: string = body?.query || "";
+    const query = body?.query || "";
 
-    if (!query) {
-      return NextResponse.json({ error: "Empty query" }, { status: 400 });
-    }
-
-    if (cache.has(query)) {
-      return NextResponse.json(cache.get(query));
-    }
-
-    /* search */
     let searchData: any = [];
     try {
       const res = await fetch(
-        `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${process.env.SERP_API_KEY}`
+        `https://serpapi.com/search.json?q=${query}&api_key=${process.env.SERP_API_KEY}`
       );
       const data = await res.json();
-      searchData = data?.organic_results?.slice(0, 3) || [];
-    } catch {
-      searchData = "Search failed";
-    }
+      searchData = data?.organic_results?.slice(0, 2) || [];
+    } catch {}
 
-    /* gemini */
     let aiText: any = "";
     try {
       const res = await fetch(
@@ -56,19 +26,13 @@ export async function POST(req: NextRequest) {
               parts: [{
                 text: `
 Analyze: "${query}"
-Data: ${JSON.stringify(searchData)}
 
 Return JSON:
 {
  "verdict":"",
  "main_response":"",
  "fix":"",
- "reel_script":"",
- "viralKit":{
-  "caption":"",
-  "hashtags":"",
-  "reel_hook":""
- }
+ "viralKit":{"caption":""}
 }
 `
               }]
@@ -81,22 +45,21 @@ Return JSON:
       aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     } catch {}
 
-    let finalData: any;
+    let finalData;
     try {
       finalData = JSON.parse(aiText);
     } catch {
       finalData = {
         verdict: "BHRAMAK",
-        main_response: aiText
+        main_response: aiText,
+        fix: "Try again",
+        viralKit: { caption: "" }
       };
     }
-
-    finalData = normalize(finalData);
-    cache.set(query, finalData);
 
     return NextResponse.json(finalData);
 
   } catch {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ error: "Server error" });
   }
 }
