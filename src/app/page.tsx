@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import InputBox from "@/components/InputBox";
+import Loader from "@/components/Loader";
+import ResultCard from "@/components/ResultCard";
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   const submit = async () => {
-    if (!query) return;
+    if (!query) return alert("Enter something");
+
+    setLoading(true);
 
     const res = await fetch("/api/analyze", {
       method: "POST",
@@ -16,50 +22,33 @@ export default function Home() {
 
     const data = await res.json();
     setResult(data);
+
+    setLoading(false);
   };
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center p-6">
 
-      <h1 className="text-3xl mb-6 text-purple-400">
+      <h1 className="text-4xl text-purple-400 mb-6">
         Satya AI ⚡
       </h1>
 
-      <input
-        className="w-full max-w-xl p-3 bg-white/10 rounded"
-        placeholder="Paste reel / news..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      <InputBox value={query} setValue={setQuery} onSubmit={submit} />
 
-      <button
-        onClick={submit}
-        className="mt-3 px-6 py-2 bg-purple-600 rounded"
-      >
-        Analyze
-      </button>
+      {loading && <Loader />}
 
       {result && (
-        <div className="mt-6 w-full max-w-xl space-y-3">
+        <div className="mt-6 w-full max-w-xl space-y-4">
 
-          <Box t="Verdict" v={result.verdict} />
-          <Box t="Analysis" v={result.main_response} />
-          <Box t="Fix" v={result.fix} />
-          <Box t="Script" v={result.reel_script} />
-          <Box t="Caption" v={result.viralKit.caption} />
+          <ResultCard title="🔥 Verdict" value={result.verdict} />
+          <ResultCard title="📊 Analysis" value={result.main_response} />
+          <ResultCard title="🧠 Fix" value={result.fix} />
+          <ResultCard title="🎬 Script" value={result.reel_script} />
+          <ResultCard title="🚀 Caption" value={result.viralKit.caption} />
+          <ResultCard title="🏷 Hashtags" value={result.viralKit.hashtags} />
 
         </div>
       )}
-
     </main>
-  );
-}
-
-function Box({ t, v }: any) {
-  return (
-    <div className="bg-white/10 p-3 rounded">
-      <p className="text-gray-400 text-sm">{t}</p>
-      <p className="text-sm">{v}</p>
-    </div>
   );
 }
