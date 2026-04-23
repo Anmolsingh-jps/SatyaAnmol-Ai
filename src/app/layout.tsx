@@ -1,0 +1,18 @@
+export const metadata = {
+  title: "Satya AI",
+  description: "Truth Engine",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body style={{ margin: 0, background: "black", color: "white" }}>
+        {children}
+      </body>
+    </html>
+  );
+}
