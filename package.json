@@ -1,11 +1,25 @@
 {
   "name": "satya-ai",
   "version": "1.0.0",
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
+    "@google/generative-ai": "latest",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest",
-    "@google/generative-ai": "latest"
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "autoprefixer": "latest"
   }
 }
