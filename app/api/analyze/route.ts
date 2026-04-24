@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     let openai = "";
     let gemini = "";
 
-    /* -------- CLAUDE -------- */
+    // CLAUDE
     if (process.env.ANTHROPIC_API_KEY) {
       try {
         const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -25,17 +25,17 @@ export async function POST(req: Request) {
 
         const data = await res.json();
         claude = data?.content?.[0]?.text || "";
-      } catch {}
+      } catch (e) {}
     }
 
-    /* -------- OPENAI -------- */
+    // OPENAI
     if (process.env.OPENAI_API_KEY) {
       try {
         const res = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
           },
           body: JSON.stringify({
             model: "gpt-4o-mini",
@@ -45,10 +45,10 @@ export async function POST(req: Request) {
 
         const data = await res.json();
         openai = data?.choices?.[0]?.message?.content || "";
-      } catch {}
+      } catch (e) {}
     }
 
-    /* -------- GEMINI -------- */
+    // GEMINI
     if (process.env.GEMINI_API_KEY) {
       try {
         const res = await fetch(
@@ -65,10 +65,10 @@ export async function POST(req: Request) {
         const data = await res.json();
         gemini =
           data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      } catch {}
+      } catch (e) {}
     }
 
-    /* -------- FINAL RESULT -------- */
+    // FINAL RESULT
     const final =
       "🔮 SATYA AI RESULT\n\n" +
       (claude ? "🧠 Claude:\n" + claude + "\n\n" : "") +
@@ -82,8 +82,10 @@ export async function POST(req: Request) {
       gemini
     });
 
-  } catch {
+  } catch (error) {
     return Response.json(
       { final: "❌ Error occurred" },
       { status: 500 }
     );
+  }
+}
